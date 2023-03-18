@@ -591,4 +591,100 @@ Además, el despliegue contínuo nos recomienda que cuando vayamos a hacer esto,
 
 ##### CI-CD
 
-<!-- min 14:51 -->
+Esta cadena de procesos o `pipeline` (un `pipeline` es una secuencia de instrucciones que se ejecutan una detrás de otra), representa el esquema `CI-CD`. El proceso de `CI` comprende desde `Delivery Team` hasta el `Buid & unit test`. EL proceso de `CD` comprende desde `Automated acceptance tests` hasta el `Release`.
+
+### CD
+
+1. copiar los ficheros resultantes en el servidor de producción.
+2. Rejecución del programa en cuestión.
+
+Estos procesos ya se encuentran de manera automatizada. Existen muchas herramientas gratuitas que nos permiten hacer todo este proceso automatizado.
+
+## Softwares para automatizar la integración.
+
+Los softwares que más se utilizan hoy en día para los procesos de automatización son: `Jenkins` es sencillo de montan en el pc, `Travis CI`, `CircleCI`, `Hudson` de Apache, `TeamCity` que es muy sencilla de utilizar pero tiene un tiempo corto de uso gratis, `Bamboo` de Atlassian, `CruiseControl`, `Codeship`. Y luego de estos, los que traen ya de serie los repositorios más comunes como `GitLab CI`, `Github` con sus actions, incluso `Bitbucket`.
+
+`Jenkins` es la herramienta de automatización por excelencia que se utiliza desde hace muchos años y en la mayoría de las empresas se utiliza esta herramienta, es muy sencilla de montar de forma local y a la fecha tiene más de 1.800 pluggins. Su interfaz gráfica no es tan amigable como la de TeamCity pero eso no la hace compleja para usar.
+
+En todos los sistemas de `CI-CD` hay que "programar", en algunos lo hacemos mediante fucheros de configuración, en otros como `Jenkins`, lo hacemos mediante un pseudo lenguaje, y esto es así porque `Jenkins` exactamente no sabe cual es nuestro `pipeline`, nosotros somos los encargados de definir los pasos de nuestro `pipeline`.
+
+La sintáxis del `pipeline` de `Jenkins` es declarativa:
+
+```shel
+pipeline {
+    /* insert Declarative Pipeline here */
+}
+```
+
+Por ejemplo:
+
+```shell
+pipeline {
+    agent any
+    options {
+        // Timeout counter starts AFTER agent is allocated
+        timeout(time: 1, unit: 'SECONDS')
+    }
+    stages {
+        stage('Example') {
+            steps {
+                echo 'Hello World'
+            }
+        }
+    }
+}
+```
+
+Todas las herramientas `CD-CI` se basan en `pipelines` ya se hagan de forma gráfica como en `TeamCity` o se hagan mediante scripts como en `Jenkins`. Las que usan scripts resultan más potentes porque se ajustan a lo que nosotros queremos.
+
+Los `pipelines` en `Jenkins` se dividen en secciones, por ejemplo la sección "tools", la sección "stages", "options", y una de las más importantes es la sección "tools" porque indicamos que herramientas vamos a utilizar.
+
+`Circle CI` es una opción web como herramienta de automatización, también es uno de los más utilizados. Esta herramienta ofrece 6.000 minutos de compilación al mes gratis ejecutando "hasta" 30 trabajos a la vez.
+
+`Circle CI` crea una carpeta en nuestro repositorio con un fichero `config.yml` y aquí es donde definimos exactamente los mismo que en `Jenkins` aunque la sintáxis es distinta.
+
+```shel
+version: 2.1
+
+# Define the jobs we want to run for this project
+jobs:
+  build:
+    docker:
+      - image: cimg/base:2023.03
+    steps:
+      - checkout
+      - run: echo "this is the build job"
+  test:
+    docker:
+      - image: cimg/base:2023.03
+    steps:
+      - checkout
+      - run: echo "this is the test job"
+  deploy:
+    docker:
+      - image: cimg/base:2023.03
+    steps:
+      - checkout
+      - run: echo "this is the deploy job"
+
+# Orchestrate our job run sequence
+workflows:
+  build_and_test:
+    jobs:
+      - build
+      - test:
+          requires:
+            - build
+      - hold:
+          type: approval
+          requires:
+            - build
+            - test
+      - deploy:
+          requires:
+            - hold
+```
+
+`Travis CI` es otra opción que tenemos, es de pago excepto si lo vamos a utilizar para proyectos `Open Source`.
+
+# GitHub Actions
